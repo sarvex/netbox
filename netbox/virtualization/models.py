@@ -175,13 +175,16 @@ class Cluster(PrimaryModel):
 
         # If the Cluster is assigned to a Site, verify that all host Devices belong to that Site.
         if self.pk and self.site:
-            nonsite_devices = Device.objects.filter(cluster=self).exclude(site=self.site).count()
-            if nonsite_devices:
-                raise ValidationError({
-                    'site': "{} devices are assigned as hosts for this cluster but are not in site {}".format(
-                        nonsite_devices, self.site
-                    )
-                })
+            if (
+                nonsite_devices := Device.objects.filter(cluster=self)
+                .exclude(site=self.site)
+                .count()
+            ):
+                raise ValidationError(
+                    {
+                        'site': f"{nonsite_devices} devices are assigned as hosts for this cluster but are not in site {self.site}"
+                    }
+                )
 
 
 #
@@ -321,9 +324,10 @@ class VirtualMachine(PrimaryModel, ConfigContextModel):
             if ip is not None:
                 if ip.assigned_object in interfaces:
                     pass
-                elif ip.nat_inside is not None and ip.nat_inside.assigned_object in interfaces:
-                    pass
-                else:
+                elif (
+                    ip.nat_inside is None
+                    or ip.nat_inside.assigned_object not in interfaces
+                ):
                     raise ValidationError({
                         field: f"The specified IP address ({ip}) is not assigned to this VM.",
                     })

@@ -28,7 +28,7 @@ class ConditionTestCase(TestCase):
     def test_invalid_type(self):
         with self.assertRaises(ValueError):
             # dict type is unsupported
-            Condition('x', 1, dict())
+            Condition('x', 1, {})
 
     def test_invalid_op_type(self):
         with self.assertRaises(ValueError):

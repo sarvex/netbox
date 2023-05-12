@@ -10,9 +10,7 @@ class BigInt(Scalar):
     @staticmethod
     def to_float(value):
         num = int(value)
-        if num > MAX_INT or num < MIN_INT:
-            return float(num)
-        return num
+        return float(num) if num > MAX_INT or num < MIN_INT else num
 
     serialize = to_float
     parse_value = to_float

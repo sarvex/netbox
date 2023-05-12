@@ -233,9 +233,7 @@ class VirtualMachineFilterSet(PrimaryModelFilterSet, TenancyFilterSet, LocalConf
 
     def _has_primary_ip(self, queryset, name, value):
         params = Q(primary_ip4__isnull=False) | Q(primary_ip6__isnull=False)
-        if value:
-            return queryset.filter(params)
-        return queryset.exclude(params)
+        return queryset.filter(params) if value else queryset.exclude(params)
 
 
 class VMInterfaceFilterSet(PrimaryModelFilterSet):

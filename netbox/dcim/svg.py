@@ -39,11 +39,7 @@ class RackElevationSVG:
     def __init__(self, rack, user=None, include_images=True, base_url=None):
         self.rack = rack
         self.include_images = include_images
-        if base_url is not None:
-            self.base_url = base_url.rstrip('/')
-        else:
-            self.base_url = ''
-
+        self.base_url = base_url.rstrip('/') if base_url is not None else ''
         # Determine the subset of devices within this rack that are viewable by the user, if any
         permitted_devices = self.rack.devices
         if user is not None:
@@ -52,15 +48,7 @@ class RackElevationSVG:
 
     @staticmethod
     def _get_device_description(device):
-        return '{} ({}) — {} {} ({}U) {} {}'.format(
-            device.name,
-            device.device_role,
-            device.device_type.manufacturer.name,
-            device.device_type.model,
-            device.device_type.u_height,
-            device.asset_tag or '',
-            device.serial or ''
-        )
+        return f"{device.name} ({device.device_role}) — {device.device_type.manufacturer.name} {device.device_type.model} ({device.device_type.u_height}U) {device.asset_tag or ''} {device.serial or ''}"
 
     @staticmethod
     def _add_gradient(drawing, id_, color):
@@ -83,7 +71,7 @@ class RackElevationSVG:
         drawing = svgwrite.Drawing(size=(width, height))
 
         # add the stylesheet
-        with open('{}/rack_elevation.css'.format(settings.STATIC_ROOT)) as css_file:
+        with open(f'{settings.STATIC_ROOT}/rack_elevation.css') as css_file:
             drawing.defs.add(drawing.style(css_file.read()))
 
         # add gradients
@@ -96,7 +84,7 @@ class RackElevationSVG:
     def _draw_device_front(self, drawing, device, start, end, text):
         name = get_device_name(device)
         if device.devicebay_count:
-            name += ' ({}/{})'.format(device.get_children().count(), device.devicebay_count)
+            name += f' ({device.get_children().count()}/{device.devicebay_count})'
 
         color = device.device_role.color
         link = drawing.add(
@@ -107,8 +95,8 @@ class RackElevationSVG:
             )
         )
         link.set_desc(self._get_device_description(device))
-        link.add(drawing.rect(start, end, style='fill: #{}'.format(color), class_='slot'))
-        hex_color = '#{}'.format(foreground_color(color))
+        link.add(drawing.rect(start, end, style=f'fill: #{color}', class_='slot'))
+        hex_color = f'#{foreground_color(color)}'
         link.add(drawing.text(str(name), insert=text, fill=hex_color))
 
         # Embed front device type image if one exists
@@ -167,9 +155,9 @@ class RackElevationSVG:
             drawing.a(href=link_url, target='_top')
         )
         if reservation:
-            link.set_desc('{} — {} · {}'.format(
-                reservation.description, reservation.user, reservation.created
-            ))
+            link.set_desc(
+                f'{reservation.description} — {reservation.user} · {reservation.created}'
+            )
         link.add(drawing.rect(start, end, class_=class_))
         link.add(drawing.text("add device", insert=text, class_='add-device'))
 
@@ -236,8 +224,6 @@ class RackElevationSVG:
                 # Draw shallow devices, reservations, or empty units
                 class_ = 'slot'
                 reservation = reserved_units.get(unit["id"])
-                if device:
-                    class_ += ' occupied'
                 if reservation:
                     class_ += ' reserved'
                 self._draw_empty(

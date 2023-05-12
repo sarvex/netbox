@@ -614,9 +614,7 @@ class IPAddressFilterSet(PrimaryModelFilterSet, TenancyFilterSet):
             return queryset.none()
 
     def filter_mask_length(self, queryset, name, value):
-        if not value:
-            return queryset
-        return queryset.filter(address__net_mask_length=value)
+        return queryset.filter(address__net_mask_length=value) if value else queryset
 
     def filter_present_in_vrf(self, queryset, name, vrf):
         if vrf is None:
@@ -627,7 +625,7 @@ class IPAddressFilterSet(PrimaryModelFilterSet, TenancyFilterSet):
         )
 
     def filter_device(self, queryset, name, value):
-        devices = Device.objects.filter(**{'{}__in'.format(name): value})
+        devices = Device.objects.filter(**{f'{name}__in': value})
         if not devices.exists():
             return queryset.none()
         interface_ids = []
@@ -638,7 +636,7 @@ class IPAddressFilterSet(PrimaryModelFilterSet, TenancyFilterSet):
         )
 
     def filter_virtual_machine(self, queryset, name, value):
-        virtual_machines = VirtualMachine.objects.filter(**{'{}__in'.format(name): value})
+        virtual_machines = VirtualMachine.objects.filter(**{f'{name}__in': value})
         if not virtual_machines.exists():
             return queryset.none()
         interface_ids = []

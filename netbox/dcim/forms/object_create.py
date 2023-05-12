@@ -278,11 +278,11 @@ class FrontPortTemplateCreateForm(ComponentTemplateCreateForm):
         choices = []
         rear_ports = RearPortTemplate.objects.filter(device_type=device_type)
         for rear_port in rear_ports:
-            for i in range(1, rear_port.positions + 1):
-                if (rear_port.pk, i) not in occupied_port_positions:
-                    choices.append(
-                        ('{}:{}'.format(rear_port.pk, i), '{}:{}'.format(rear_port.name, i))
-                    )
+            choices.extend(
+                (f'{rear_port.pk}:{i}', f'{rear_port.name}:{i}')
+                for i in range(1, rear_port.positions + 1)
+                if (rear_port.pk, i) not in occupied_port_positions
+            )
         self.fields['rear_port_set'].choices = choices
 
     def clean(self):
@@ -292,10 +292,11 @@ class FrontPortTemplateCreateForm(ComponentTemplateCreateForm):
         front_port_count = len(self.cleaned_data['name_pattern'])
         rear_port_count = len(self.cleaned_data['rear_port_set'])
         if front_port_count != rear_port_count:
-            raise forms.ValidationError({
-                'rear_port_set': 'The provided name pattern will create {} ports, however {} rear port assignments '
-                                 'were selected. These counts must match.'.format(front_port_count, rear_port_count)
-            })
+            raise forms.ValidationError(
+                {
+                    'rear_port_set': f'The provided name pattern will create {front_port_count} ports, however {rear_port_count} rear port assignments were selected. These counts must match.'
+                }
+            )
 
     def get_iterative_data(self, iteration):
 
@@ -568,11 +569,11 @@ class FrontPortCreateForm(ComponentCreateForm):
         choices = []
         rear_ports = RearPort.objects.filter(device=device)
         for rear_port in rear_ports:
-            for i in range(1, rear_port.positions + 1):
-                if (rear_port.pk, i) not in occupied_port_positions:
-                    choices.append(
-                        ('{}:{}'.format(rear_port.pk, i), '{}:{}'.format(rear_port.name, i))
-                    )
+            choices.extend(
+                (f'{rear_port.pk}:{i}', f'{rear_port.name}:{i}')
+                for i in range(1, rear_port.positions + 1)
+                if (rear_port.pk, i) not in occupied_port_positions
+            )
         self.fields['rear_port_set'].choices = choices
 
     def clean(self):
@@ -582,10 +583,11 @@ class FrontPortCreateForm(ComponentCreateForm):
         front_port_count = len(self.cleaned_data['name_pattern'])
         rear_port_count = len(self.cleaned_data['rear_port_set'])
         if front_port_count != rear_port_count:
-            raise forms.ValidationError({
-                'rear_port_set': 'The provided name pattern will create {} ports, however {} rear port assignments '
-                                 'were selected. These counts must match.'.format(front_port_count, rear_port_count)
-            })
+            raise forms.ValidationError(
+                {
+                    'rear_port_set': f'The provided name pattern will create {front_port_count} ports, however {rear_port_count} rear port assignments were selected. These counts must match.'
+                }
+            )
 
     def get_iterative_data(self, iteration):
 

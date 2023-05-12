@@ -386,16 +386,10 @@ MENUS = [
 #
 
 if registry['plugin_menu_items']:
-    plugin_menu_groups = []
-
-    for plugin_name, items in registry['plugin_menu_items'].items():
-        plugin_menu_groups.append(
-            MenuGroup(
-                label=plugin_name,
-                items=items
-            )
-        )
-
+    plugin_menu_groups = [
+        MenuGroup(label=plugin_name, items=items)
+        for plugin_name, items in registry['plugin_menu_items'].items()
+    ]
     PLUGIN_MENU = Menu(
         label="Plugins",
         icon_class="mdi mdi-puzzle",

@@ -251,9 +251,9 @@ class ClusterAddDevicesView(generic.ObjectEditView):
                     device.cluster = cluster
                     device.save()
 
-            messages.success(request, "Added {} devices to cluster {}".format(
-                len(device_pks), cluster
-            ))
+            messages.success(
+                request, f"Added {len(device_pks)} devices to cluster {cluster}"
+            )
             return redirect(cluster.get_absolute_url())
 
         return render(request, self.template_name, {
@@ -284,9 +284,10 @@ class ClusterRemoveDevicesView(generic.ObjectEditView):
                         device.cluster = None
                         device.save()
 
-                messages.success(request, "Removed {} devices from cluster {}".format(
-                    len(device_pks), cluster
-                ))
+                messages.success(
+                    request,
+                    f"Removed {len(device_pks)} devices from cluster {cluster}",
+                )
                 return redirect(cluster.get_absolute_url())
 
         else:
@@ -501,4 +502,4 @@ class VirtualMachineBulkAddInterfaceView(generic.BulkComponentCreateView):
     default_return_url = 'virtualization:virtualmachine_list'
 
     def get_required_permission(self):
-        return f'virtualization.add_vminterface'
+        return 'virtualization.add_vminterface'

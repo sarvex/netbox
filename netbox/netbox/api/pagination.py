@@ -29,7 +29,7 @@ class OptionalLimitOffsetPagination(LimitOffsetPagination):
             self.display_page_controls = True
 
         if self.count == 0 or self.offset > self.count:
-            return list()
+            return []
 
         if self.limit:
             return list(queryset[self.offset:self.offset + self.limit])
@@ -42,9 +42,7 @@ class OptionalLimitOffsetPagination(LimitOffsetPagination):
                 limit = int(request.query_params[self.limit_query_param])
                 if limit < 0:
                     raise ValueError()
-                # Enforce maximum page size, if defined
-                MAX_PAGE_SIZE = get_config().MAX_PAGE_SIZE
-                if MAX_PAGE_SIZE:
+                if MAX_PAGE_SIZE := get_config().MAX_PAGE_SIZE:
                     return MAX_PAGE_SIZE if limit == 0 else min(limit, MAX_PAGE_SIZE)
                 return limit
             except (KeyError, ValueError):
@@ -55,15 +53,9 @@ class OptionalLimitOffsetPagination(LimitOffsetPagination):
     def get_next_link(self):
 
         # Pagination has been disabled
-        if not self.limit:
-            return None
-
-        return super().get_next_link()
+        return None if not self.limit else super().get_next_link()
 
     def get_previous_link(self):
 
         # Pagination has been disabled
-        if not self.limit:
-            return None
-
-        return super().get_previous_link()
+        return None if not self.limit else super().get_previous_link()

@@ -98,11 +98,11 @@ class WritableNestedSerializer(BaseModelSerializer):
                 return queryset.get(**params)
             except ObjectDoesNotExist:
                 raise ValidationError(
-                    "Related object not found using the provided attributes: {}".format(params)
+                    f"Related object not found using the provided attributes: {params}"
                 )
             except MultipleObjectsReturned:
                 raise ValidationError(
-                    "Multiple objects match the provided attributes: {}".format(params)
+                    f"Multiple objects match the provided attributes: {params}"
                 )
             except FieldError as e:
                 raise ValidationError(e)
@@ -116,8 +116,7 @@ class WritableNestedSerializer(BaseModelSerializer):
                 pk = int(data)
             except (TypeError, ValueError):
                 raise ValidationError(
-                    "Related objects must be referenced by numeric ID or by dictionary of attributes. Received an "
-                    "unrecognized value: {}".format(data)
+                    f"Related objects must be referenced by numeric ID or by dictionary of attributes. Received an unrecognized value: {data}"
                 )
 
         # Look up object by PK
@@ -126,7 +125,7 @@ class WritableNestedSerializer(BaseModelSerializer):
             return queryset.get(pk=int(data))
         except ObjectDoesNotExist:
             raise ValidationError(
-                "Related object not found using the provided numeric ID: {}".format(pk)
+                f"Related object not found using the provided numeric ID: {pk}"
             )
 
 
@@ -157,9 +156,7 @@ class PrimaryModelSerializer(CustomFieldModelSerializer):
         tags = validated_data.pop('tags', None)
         instance = super().create(validated_data)
 
-        if tags is not None:
-            return self._save_tags(instance, tags)
-        return instance
+        return self._save_tags(instance, tags) if tags is not None else instance
 
     def update(self, instance, validated_data):
         tags = validated_data.pop('tags', None)
@@ -169,9 +166,7 @@ class PrimaryModelSerializer(CustomFieldModelSerializer):
 
         instance = super().update(instance, validated_data)
 
-        if tags is not None:
-            return self._save_tags(instance, tags)
-        return instance
+        return self._save_tags(instance, tags) if tags is not None else instance
 
     def _save_tags(self, instance, tags):
         if tags:

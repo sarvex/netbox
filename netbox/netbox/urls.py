@@ -96,8 +96,6 @@ if settings.METRICS_ENABLED:
     ]
 
 # Prepend BASE_PATH
-urlpatterns = [
-    path('{}'.format(settings.BASE_PATH), include(_patterns))
-]
+urlpatterns = [path(f'{settings.BASE_PATH}', include(_patterns))]
 
 handler500 = 'netbox.views.server_error'

@@ -157,11 +157,11 @@ class ClusterAddDevicesForm(BootstrapMixin, forms.Form):
         if self.cluster.site is not None:
             for device in self.cleaned_data.get('devices', []):
                 if device.site != self.cluster.site:
-                    raise ValidationError({
-                        'devices': "{} belongs to a different site ({}) than the cluster ({})".format(
-                            device, device.site, self.cluster.site
-                        )
-                    })
+                    raise ValidationError(
+                        {
+                            'devices': f"{device} belongs to a different site ({device.site}) than the cluster ({self.cluster.site})"
+                        }
+                    )
 
 
 class ClusterRemoveDevicesForm(ConfirmationForm):
@@ -242,25 +242,27 @@ class VirtualMachineForm(TenancyForm, CustomFieldModelForm):
                 # Gather PKs of all interfaces belonging to this VM
                 interface_ids = self.instance.interfaces.values_list('pk', flat=True)
 
-                # Collect interface IPs
-                interface_ips = IPAddress.objects.filter(
+                if interface_ips := IPAddress.objects.filter(
                     address__family=family,
-                    assigned_object_type=ContentType.objects.get_for_model(VMInterface),
-                    assigned_object_id__in=interface_ids
-                )
-                if interface_ips:
+                    assigned_object_type=ContentType.objects.get_for_model(
+                        VMInterface
+                    ),
+                    assigned_object_id__in=interface_ids,
+                ):
                     ip_list = [(ip.id, f'{ip.address} ({ip.assigned_object})') for ip in interface_ips]
                     ip_choices.append(('Interface IPs', ip_list))
-                # Collect NAT IPs
-                nat_ips = IPAddress.objects.prefetch_related('nat_inside').filter(
+                if nat_ips := IPAddress.objects.prefetch_related(
+                    'nat_inside'
+                ).filter(
                     address__family=family,
-                    nat_inside__assigned_object_type=ContentType.objects.get_for_model(VMInterface),
-                    nat_inside__assigned_object_id__in=interface_ids
-                )
-                if nat_ips:
+                    nat_inside__assigned_object_type=ContentType.objects.get_for_model(
+                        VMInterface
+                    ),
+                    nat_inside__assigned_object_id__in=interface_ids,
+                ):
                     ip_list = [(ip.id, f'{ip.address} (NAT)') for ip in nat_ips]
                     ip_choices.append(('NAT IPs', ip_list))
-                self.fields['primary_ip{}'.format(family)].choices = ip_choices
+                self.fields[f'primary_ip{family}'].choices = ip_choices
 
         else:
 

@@ -23,9 +23,7 @@ class GroupFilterSet(BaseFilterSet):
         fields = ['id', 'name']
 
     def search(self, queryset, name, value):
-        if not value.strip():
-            return queryset
-        return queryset.filter(name__icontains=value)
+        return queryset.filter(name__icontains=value) if value.strip() else queryset
 
 
 class UserFilterSet(BaseFilterSet):

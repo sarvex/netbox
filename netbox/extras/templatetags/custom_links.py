@@ -59,11 +59,9 @@ def custom_links(context, obj):
         elif cl.group_name:
             group_names[cl.group_name] = [cl]
 
-        # Add non-grouped links
         else:
             try:
-                rendered = cl.render(link_context)
-                if rendered:
+                if rendered := cl.render(link_context):
                     template_code += LINK_BUTTON.format(
                         rendered['link'], rendered['link_target'], cl.button_class, rendered['text']
                     )
@@ -78,8 +76,7 @@ def custom_links(context, obj):
 
         for cl in links:
             try:
-                rendered = cl.render(link_context)
-                if rendered:
+                if rendered := cl.render(link_context):
                     links_rendered.append(
                         GROUP_LINK.format(rendered['link'], rendered['link_target'], rendered['text'])
                     )

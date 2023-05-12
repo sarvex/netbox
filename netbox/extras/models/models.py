@@ -573,9 +573,7 @@ class ConfigRevision(models.Model):
         return f'Config revision #{self.pk} ({self.created})'
 
     def __getattr__(self, item):
-        if item in self.data:
-            return self.data[item]
-        return super().__getattribute__(item)
+        return self.data[item] if item in self.data else super().__getattribute__(item)
 
     def activate(self):
         """

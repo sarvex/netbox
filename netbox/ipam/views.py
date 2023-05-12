@@ -290,8 +290,8 @@ class AggregatePrefixesView(generic.ObjectChildrenView):
 
     def prep_table_data(self, request, queryset, parent):
         # Determine whether to show assigned prefixes, available prefixes, or both
-        show_available = bool(request.GET.get('show_available', 'true') == 'true')
-        show_assigned = bool(request.GET.get('show_assigned', 'true') == 'true')
+        show_available = request.GET.get('show_available', 'true') == 'true'
+        show_assigned = request.GET.get('show_assigned', 'true') == 'true'
 
         return add_requested_prefixes(parent.prefix, queryset, show_available, show_assigned)
 
@@ -300,8 +300,8 @@ class AggregatePrefixesView(generic.ObjectChildrenView):
             'bulk_querystring': f'within={instance.prefix}',
             'active_tab': 'prefixes',
             'first_available_prefix': instance.get_first_available_prefix(),
-            'show_available': bool(request.GET.get('show_available', 'true') == 'true'),
-            'show_assigned': bool(request.GET.get('show_assigned', 'true') == 'true'),
+            'show_available': request.GET.get('show_available', 'true') == 'true',
+            'show_assigned': request.GET.get('show_assigned', 'true') == 'true',
         }
 
 
@@ -463,8 +463,8 @@ class PrefixPrefixesView(generic.ObjectChildrenView):
 
     def prep_table_data(self, request, queryset, parent):
         # Determine whether to show assigned prefixes, available prefixes, or both
-        show_available = bool(request.GET.get('show_available', 'true') == 'true')
-        show_assigned = bool(request.GET.get('show_assigned', 'true') == 'true')
+        show_available = request.GET.get('show_available', 'true') == 'true'
+        show_assigned = request.GET.get('show_assigned', 'true') == 'true'
 
         return add_requested_prefixes(parent.prefix, queryset, show_available, show_assigned)
 
@@ -473,8 +473,8 @@ class PrefixPrefixesView(generic.ObjectChildrenView):
             'bulk_querystring': f"vrf_id={instance.vrf.pk if instance.vrf else '0'}&within={instance.prefix}",
             'active_tab': 'prefixes',
             'first_available_prefix': instance.get_first_available_prefix(),
-            'show_available': bool(request.GET.get('show_available', 'true') == 'true'),
-            'show_assigned': bool(request.GET.get('show_assigned', 'true') == 'true'),
+            'show_available': request.GET.get('show_available', 'true') == 'true',
+            'show_assigned': request.GET.get('show_assigned', 'true') == 'true',
         }
 
 
@@ -509,7 +509,7 @@ class PrefixIPAddressesView(generic.ObjectChildrenView):
         return parent.get_child_ips().restrict(request.user, 'view').prefetch_related('vrf', 'tenant')
 
     def prep_table_data(self, request, queryset, parent):
-        show_available = bool(request.GET.get('show_available', 'true') == 'true')
+        show_available = request.GET.get('show_available', 'true') == 'true'
         if show_available:
             return add_available_ipaddresses(parent.prefix, queryset, parent.is_pool)
 

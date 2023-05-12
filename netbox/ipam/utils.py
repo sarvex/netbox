@@ -22,11 +22,11 @@ def add_requested_prefixes(parent, prefix_list, show_available=True, show_assign
         # Find all unallocated space, add fake Prefix objects to child_prefixes.
         available_prefixes = netaddr.IPSet(parent) ^ netaddr.IPSet([p.prefix for p in prefix_list])
         available_prefixes = [Prefix(prefix=p, status=None) for p in available_prefixes.iter_cidrs()]
-        child_prefixes = child_prefixes + available_prefixes
+        child_prefixes += available_prefixes
 
     # Add assigned prefixes to the table if requested
     if prefix_list and show_assigned:
-        child_prefixes = child_prefixes + list(prefix_list)
+        child_prefixes += list(prefix_list)
 
     # Sort child prefixes after additions
     child_prefixes.sort(key=lambda p: p.prefix)
@@ -52,15 +52,17 @@ def add_available_ipaddresses(prefix, ipaddress_list, is_pool=False):
         last_ip_in_prefix = netaddr.IPAddress(prefix.last)
 
     if not ipaddress_list:
-        return [(
-            int(last_ip_in_prefix - first_ip_in_prefix + 1),
-            '{}/{}'.format(first_ip_in_prefix, prefix.prefixlen)
-        )]
+        return [
+            (
+                int(last_ip_in_prefix - first_ip_in_prefix + 1),
+                f'{first_ip_in_prefix}/{prefix.prefixlen}',
+            )
+        ]
 
     # Account for any available IPs before the first real IP
     if ipaddress_list[0].address.ip > first_ip_in_prefix:
         skipped_count = int(ipaddress_list[0].address.ip - first_ip_in_prefix)
-        first_skipped = '{}/{}'.format(first_ip_in_prefix, prefix.prefixlen)
+        first_skipped = f'{first_ip_in_prefix}/{prefix.prefixlen}'
         output.append((skipped_count, first_skipped))
 
     # Iterate through existing IPs and annotate free ranges
@@ -68,7 +70,7 @@ def add_available_ipaddresses(prefix, ipaddress_list, is_pool=False):
         if prev_ip:
             diff = int(ip.address.ip - prev_ip.address.ip)
             if diff > 1:
-                first_skipped = '{}/{}'.format(prev_ip.address.ip + 1, prefix.prefixlen)
+                first_skipped = f'{prev_ip.address.ip + 1}/{prefix.prefixlen}'
                 output.append((diff - 1, first_skipped))
         output.append(ip)
         prev_ip = ip
@@ -76,7 +78,7 @@ def add_available_ipaddresses(prefix, ipaddress_list, is_pool=False):
     # Include any remaining available IPs
     if prev_ip.address.ip < last_ip_in_prefix:
         skipped_count = int(last_ip_in_prefix - prev_ip.address.ip)
-        first_skipped = '{}/{}'.format(prev_ip.address.ip + 1, prefix.prefixlen)
+        first_skipped = f'{prev_ip.address.ip + 1}/{prefix.prefixlen}'
         output.append((skipped_count, first_skipped))
 
     return output

@@ -400,8 +400,8 @@ class ObjectChangeView(generic.ObjectView):
 
         if prechange_data and instance.postchange_data:
             diff_added = shallow_compare_dict(
-                prechange_data or dict(),
-                instance.postchange_data or dict(),
+                prechange_data or {},
+                instance.postchange_data or {},
                 exclude=['last_updated'],
             )
             diff_removed = {

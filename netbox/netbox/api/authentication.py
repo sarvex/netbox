@@ -32,9 +32,7 @@ class TokenAuthentication(authentication.TokenAuthentication):
 
             # Load from LDAP if FIND_GROUP_PERMS is active
             if ldap_backend.settings.FIND_GROUP_PERMS:
-                user = ldap_backend.populate_user(token.user.username)
-                # If the user is found in the LDAP directory use it, if not fallback to the local user
-                if user:
+                if user := ldap_backend.populate_user(token.user.username):
                     return user, token
 
         return token.user, token
@@ -91,6 +89,4 @@ class IsAuthenticatedOrLoginNotRequired(BasePermission):
     Returns True if the user is authenticated or LOGIN_REQUIRED is False.
     """
     def has_permission(self, request, view):
-        if not settings.LOGIN_REQUIRED:
-            return True
-        return request.user.is_authenticated
+        return True if not settings.LOGIN_REQUIRED else request.user.is_authenticated

@@ -110,11 +110,11 @@ class ModelTestCase(TestCase):
             # Handle ManyToManyFields
             if value and type(field) in (ManyToManyField, TaggableManager):
 
-                if field.related_model is ContentType and api:
-                    model_dict[key] = sorted([content_type_identifier(ct) for ct in value])
-                else:
-                    model_dict[key] = sorted([obj.pk for obj in value])
-
+                model_dict[key] = (
+                    sorted([content_type_identifier(ct) for ct in value])
+                    if field.related_model is ContentType and api
+                    else sorted([obj.pk for obj in value])
+                )
             elif api:
 
                 # Replace ContentType numeric IDs with <app_label>.<model>
@@ -126,11 +126,8 @@ class ModelTestCase(TestCase):
                 elif type(value) is IPNetwork:
                     model_dict[key] = str(value)
 
-            else:
-
-                # Convert ArrayFields to CSV strings
-                if type(instance._meta.get_field(key)) is ArrayField:
-                    model_dict[key] = ','.join([str(v) for v in value])
+            elif type(instance._meta.get_field(key)) is ArrayField:
+                model_dict[key] = ','.join([str(v) for v in value])
 
         return model_dict
 

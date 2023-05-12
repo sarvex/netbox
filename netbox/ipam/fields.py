@@ -21,7 +21,7 @@ class BaseIPField(models.Field):
             # Always return a netaddr.IPNetwork object. (netaddr.IPAddress does not provide a mask.)
             return IPNetwork(value)
         except AddrFormatError:
-            raise ValidationError("Invalid IP address format: {}".format(value))
+            raise ValidationError(f"Invalid IP address format: {value}")
         except (TypeError, ValueError) as e:
             raise ValidationError(e)
 
@@ -36,8 +36,7 @@ class BaseIPField(models.Field):
         return IPNetworkFormField
 
     def formfield(self, **kwargs):
-        defaults = {'form_class': self.form_class()}
-        defaults.update(kwargs)
+        defaults = {'form_class': self.form_class()} | kwargs
         return super().formfield(**defaults)
 
 

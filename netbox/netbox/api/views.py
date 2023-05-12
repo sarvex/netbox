@@ -206,9 +206,7 @@ class ModelViewSet(BulkUpdateModelMixin, BulkDestroyModelMixin, ObjectValidation
         if not request.user.is_authenticated:
             return
 
-        # Restrict the view's QuerySet to allow only the permitted objects
-        action = HTTP_ACTIONS[request.method]
-        if action:
+        if action := HTTP_ACTIONS[request.method]:
             self.queryset = self.queryset.restrict(request.user, action)
 
     def dispatch(self, request, *args, **kwargs):
@@ -326,12 +324,13 @@ class StatusView(APIView):
         installed_apps = {}
         for app_config in apps.get_app_configs():
             app = app_config.module
-            version = getattr(app, 'VERSION', getattr(app, '__version__', None))
-            if version:
+            if version := getattr(
+                app, 'VERSION', getattr(app, '__version__', None)
+            ):
                 if type(version) is tuple:
                     version = '.'.join(str(n) for n in version)
                 installed_apps[app_config.name] = version
-        installed_apps = {k: v for k, v in sorted(installed_apps.items())}
+        installed_apps = dict(sorted(installed_apps.items()))
 
         # Gather installed plugins
         plugins = {}
@@ -339,7 +338,7 @@ class StatusView(APIView):
             plugin_name = plugin_name.rsplit('.', 1)[-1]
             plugin_config = apps.get_app_config(plugin_name)
             plugins[plugin_name] = getattr(plugin_config, 'version', None)
-        plugins = {k: v for k, v in sorted(plugins.items())}
+        plugins = dict(sorted(plugins.items()))
 
         return Response({
             'django-version': DJANGO_VERSION,

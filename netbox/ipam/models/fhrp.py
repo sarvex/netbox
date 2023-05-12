@@ -60,8 +60,7 @@ class FHRPGroup(PrimaryModel):
 
         # Append the first assigned IP addresses (if any) to serve as an additional identifier
         if self.pk:
-            ip_address = self.ip_addresses.first()
-            if ip_address:
+            if ip_address := self.ip_addresses.first():
                 return f"{name} ({ip_address})"
 
         return name
@@ -104,6 +103,4 @@ class FHRPGroupAssignment(ChangeLoggedModel):
 
     def get_absolute_url(self):
         # Used primarily for redirection after creating a new assignment
-        if self.interface:
-            return self.interface.get_absolute_url()
-        return None
+        return self.interface.get_absolute_url() if self.interface else None

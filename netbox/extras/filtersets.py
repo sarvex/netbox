@@ -127,9 +127,7 @@ class ImageAttachmentFilterSet(BaseFilterSet):
         fields = ['id', 'content_type_id', 'object_id', 'name']
 
     def search(self, queryset, name, value):
-        if not value.strip():
-            return queryset
-        return queryset.filter(name__icontains=value)
+        return queryset.filter(name__icontains=value) if value.strip() else queryset
 
 
 class JournalEntryFilterSet(ChangeLoggedModelFilterSet):

@@ -56,18 +56,16 @@ class BaseTable(tables.Table):
         if self.empty_text is None:
             self.empty_text = f"No {self._meta.model._meta.verbose_name_plural} found"
 
-        # Hide non-default columns
-        default_columns = getattr(self.Meta, 'default_columns', list())
-        if default_columns:
+        if default_columns := getattr(self.Meta, 'default_columns', []):
             for column in self.columns:
                 if column.name not in default_columns:
                     self.columns.hide(column.name)
 
         # Apply custom column ordering for user
         if user is not None and not isinstance(user, AnonymousUser):
-            selected_columns = user.config.get(f"tables.{self.__class__.__name__}.columns")
-            if selected_columns:
-
+            if selected_columns := user.config.get(
+                f"tables.{self.__class__.__name__}.columns"
+            ):
                 # Show only persistent or selected columns
                 for name, column in self.columns.items():
                     if name in ['pk', 'actions', *selected_columns]:
@@ -119,11 +117,11 @@ class BaseTable(tables.Table):
             self.data.data = self.data.data.prefetch_related(None).prefetch_related(*prefetch_fields)
 
     def _get_columns(self, visible=True):
-        columns = []
-        for name, column in self.columns.items():
-            if column.visible == visible and name not in ['pk', 'actions']:
-                columns.append((name, column.verbose_name))
-        return columns
+        return [
+            (name, column.verbose_name)
+            for name, column in self.columns.items()
+            if column.visible == visible and name not in ['pk', 'actions']
+        ]
 
     @property
     def available_columns(self):
@@ -197,15 +195,11 @@ class TemplateColumn(tables.TemplateColumn):
 
     def render(self, *args, **kwargs):
         ret = super().render(*args, **kwargs)
-        if not ret.strip():
-            return self.PLACEHOLDER
-        return ret
+        return self.PLACEHOLDER if not ret.strip() else ret
 
     def value(self, **kwargs):
         ret = super().value(**kwargs)
-        if ret == self.PLACEHOLDER:
-            return ''
-        return ret
+        return '' if ret == self.PLACEHOLDER else ret
 
 
 @library.register
@@ -234,9 +228,7 @@ class DateTimeColumn(tables.DateTimeColumn):
     """
 
     def value(self, value):
-        if value:
-            return date_format(value, format="SHORT_DATETIME_FORMAT")
-        return None
+        return date_format(value, format="SHORT_DATETIME_FORMAT") if value else None
 
     @classmethod
     def from_field(cls, field, **kwargs):
@@ -322,14 +314,10 @@ class ContentTypeColumn(tables.Column):
     Display a ContentType instance.
     """
     def render(self, value):
-        if value is None:
-            return None
-        return content_type_name(value)
+        return None if value is None else content_type_name(value)
 
     def value(self, value):
-        if value is None:
-            return None
-        return content_type_identifier(value)
+        return None if value is None else content_type_identifier(value)
 
 
 class ContentTypesColumn(tables.ManyToManyColumn):
@@ -452,23 +440,19 @@ class CustomFieldColumn(tables.Column):
 
     def render(self, value):
         if isinstance(value, list):
-            return ', '.join(v for v in value)
+            return ', '.join(value)
         elif self.customfield.type == CustomFieldTypeChoices.TYPE_BOOLEAN and value is True:
             return mark_safe('<i class="mdi mdi-check-bold text-success"></i>')
         elif self.customfield.type == CustomFieldTypeChoices.TYPE_BOOLEAN and value is False:
             return mark_safe('<i class="mdi mdi-close-thick text-danger"></i>')
         elif self.customfield.type == CustomFieldTypeChoices.TYPE_URL:
             return mark_safe(f'<a href="{value}">{value}</a>')
-        if value is not None:
-            return value
-        return self.default
+        return value if value is not None else self.default
 
     def value(self, value):
         if isinstance(value, list):
-            return ','.join(v for v in value)
-        if value is not None:
-            return value
-        return self.default
+            return ','.join(value)
+        return value if value is not None else self.default
 
 
 class CustomLinkColumn(tables.Column):
@@ -485,8 +469,7 @@ class CustomLinkColumn(tables.Column):
 
     def render(self, record):
         try:
-            rendered = self.customlink.render({'obj': record})
-            if rendered:
+            if rendered := self.customlink.render({'obj': record}):
                 return mark_safe(f'<a href="{rendered["link"]}"{rendered["link_target"]}>{rendered["text"]}</a>')
         except Exception as e:
             return mark_safe(f'<span class="text-danger" title="{e}"><i class="mdi mdi-alert"></i> Error</span>')
@@ -494,8 +477,7 @@ class CustomLinkColumn(tables.Column):
 
     def value(self, record):
         try:
-            rendered = self.customlink.render({'obj': record})
-            if rendered:
+            if rendered := self.customlink.render({'obj': record}):
                 return rendered['link']
         except Exception:
             pass
@@ -580,12 +562,8 @@ def paginate_table(table, request):
 #
 
 def linkify_email(value):
-    if value is None:
-        return None
-    return f"mailto:{value}"
+    return None if value is None else f"mailto:{value}"
 
 
 def linkify_phone(value):
-    if value is None:
-        return None
-    return f"tel:{value}"
+    return None if value is None else f"tel:{value}"

@@ -24,12 +24,13 @@ class LoginRequiredMiddleware:
 
     def __call__(self, request):
         # Redirect unauthenticated requests (except those exempted) to the login page if LOGIN_REQUIRED is true
-        if settings.LOGIN_REQUIRED and not request.user.is_authenticated:
-
-            # Redirect unauthenticated requests
-            if not request.path_info.startswith(settings.EXEMPT_PATHS):
-                login_url = f'{settings.LOGIN_URL}?next={parse.quote(request.get_full_path_info())}'
-                return HttpResponseRedirect(login_url)
+        if (
+            settings.LOGIN_REQUIRED
+            and not request.user.is_authenticated
+            and not request.path_info.startswith(settings.EXEMPT_PATHS)
+        ):
+            login_url = f'{settings.LOGIN_URL}?next={parse.quote(request.get_full_path_info())}'
+            return HttpResponseRedirect(login_url)
 
         return self.get_response(request)
 
@@ -96,9 +97,9 @@ class RemoteUserMiddleware(RemoteUserMiddleware_):
         logger = logging.getLogger(
             'netbox.authentication.RemoteUserMiddleware')
 
-        groups_string = request.META.get(
-            settings.REMOTE_AUTH_GROUP_HEADER, None)
-        if groups_string:
+        if groups_string := request.META.get(
+            settings.REMOTE_AUTH_GROUP_HEADER, None
+        ):
             groups = groups_string.split(settings.REMOTE_AUTH_GROUP_SEPARATOR)
         else:
             groups = []

@@ -100,8 +100,8 @@ class StringVar(ScriptVariable):
             self.field_attrs['validators'] = [
                 RegexValidator(
                     regex=regex,
-                    message='Invalid value. Must match regex: {}'.format(regex),
-                    code='invalid'
+                    message=f'Invalid value. Must match regex: {regex}',
+                    code='invalid',
                 )
             ]
 
@@ -301,16 +301,12 @@ class BaseScript:
             if name not in vars and issubclass(attr.__class__, ScriptVariable):
                 vars[name] = attr
 
-        # Order variables according to field_order
-        field_order = getattr(cls.Meta, 'field_order', None)
-        if not field_order:
+        if field_order := getattr(cls.Meta, 'field_order', None):
+            return {
+                field: vars.pop(field) for field in field_order if field in vars
+            } | vars
+        else:
             return vars
-        ordered_vars = {
-            field: vars.pop(field) for field in field_order if field in vars
-        }
-        ordered_vars.update(vars)
-
-        return ordered_vars
 
     def run(self, data, commit):
         raise NotImplementedError("The script must define a run() method.")
@@ -517,6 +513,5 @@ def get_script(module_name, script_name):
     Retrieve a script class by module and name. Returns None if the script does not exist.
     """
     scripts = get_scripts()
-    module = scripts.get(module_name)
-    if module:
+    if module := scripts.get(module_name):
         return module.get(script_name)

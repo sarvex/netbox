@@ -42,9 +42,9 @@ def create_test_device(name):
     manufacturer, _ = Manufacturer.objects.get_or_create(name='Manufacturer 1', slug='manufacturer-1')
     devicetype, _ = DeviceType.objects.get_or_create(model='Device Type 1', manufacturer=manufacturer)
     devicerole, _ = DeviceRole.objects.get_or_create(name='Device Role 1', slug='device-role-1')
-    device = Device.objects.create(name=name, site=site, device_type=devicetype, device_role=devicerole)
-
-    return device
+    return Device.objects.create(
+        name=name, site=site, device_type=devicetype, device_role=devicerole
+    )
 
 
 def create_test_virtualmachine(name):
@@ -53,9 +53,7 @@ def create_test_virtualmachine(name):
     """
     cluster_type, _ = ClusterType.objects.get_or_create(name='Cluster Type 1', slug='cluster-type-1')
     cluster, _ = Cluster.objects.get_or_create(name='Cluster 1', type=cluster_type)
-    virtual_machine = VirtualMachine.objects.create(name=name, cluster=cluster)
-
-    return virtual_machine
+    return VirtualMachine.objects.create(name=name, cluster=cluster)
 
 
 def create_test_user(username='testuser', permissions=None):

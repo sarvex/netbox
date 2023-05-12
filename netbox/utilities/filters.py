@@ -23,7 +23,7 @@ def multivalue_field_factory(field_class):
                 field.to_python(v) for v in value if v
             ]
 
-    return type('MultiValue{}'.format(field_class.__name__), (NewField,), dict())
+    return type(f'MultiValue{field_class.__name__}', (NewField,), {})
 
 
 #
@@ -84,7 +84,7 @@ class NullableCharFieldFilter(django_filters.CharFilter):
     def filter(self, qs, value):
         if value != settings.FILTERS_NULL_CHOICE_VALUE:
             return super().filter(qs, value)
-        qs = self.get_method(qs)(**{'{}__isnull'.format(self.field_name): True})
+        qs = self.get_method(qs)(**{f'{self.field_name}__isnull': True})
         return qs.distinct() if self.distinct else qs
 
 
